@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Compare @{{ user_a }} vs @{{ user_b }} — FilmFight{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="text-center">
+        <h1 class="text-3xl font-bold">
+            @{{ user_a }} <span class="text-zinc-600">vs</span> @{{ user_b }}
+        </h1>
+        {% if tagline %}
+            <p class="text-zinc-400 italic mt-2">"{{ tagline }}"</p>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-2 gap-6">
+        <div class="bg-zinc-800 rounded-xl p-6 border border-zinc-700 text-center">
+            <h2 class="text-sm uppercase tracking-wider text-zinc-500 mb-2">@{{ user_a }}</h2>
+            <div class="text-3xl font-bold text-film-400">—</div>
+            <p class="text-zinc-400 text-xs mt-1">total films</p>
+        </div>
+        <div class="bg-zinc-800 rounded-xl p-6 border border-zinc-700 text-center">
+            <h2 class="text-sm uppercase tracking-wider text-zinc-500 mb-2">@{{ user_b }}</h2>
+            <div class="text-3xl font-bold text-film-400">—</div>
+            <p class="text-zinc-400 text-xs mt-1">total films</p>
+        </div>
+    </div>
+
+    <div class="bg-zinc-800 rounded-xl p-6 border border-zinc-700">
+        <h2 class="text-sm uppercase tracking-wider text-zinc-500 mb-4">
+            Genre Breakdown
+        </h2>
+        <canvas id="genreChart" height="100"></canvas>
+        <p class="text-zinc-500 text-xs mt-4 text-center">
+            Build a query to return genre data and it'll appear here.
+        </p>
+    </div>
+
+    <div class="bg-zinc-800 rounded-xl p-6 border border-zinc-700">
+        <h2 class="text-sm uppercase tracking-wider text-zinc-500 mb-4">
+            Rating Correlation
+        </h2>
+        <canvas id="ratingCorrelationChart" height="80"></canvas>
+        <p class="text-zinc-500 text-xs mt-4 text-center">
+            Films both users rated will show up here once you write the query.
+        </p>
+    </div>
+</div>
+{% endblock %}

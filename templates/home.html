@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Compare Letterboxd Profiles{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center text-center py-16 gap-8">
+    <h1 class="text-5xl font-bold tracking-tight">
+        🎬 FilmFight
+    </h1>
+    <p class="text-zinc-400 text-lg max-w-md">
+        Compare Letterboxd profiles. Find out who has better taste.
+        (Spoiler: it's probably neither of you.)
+    </p>
+
+    <div class="w-full max-w-md space-y-6">
+        <form action="{% url 'analysis:compare' %}" method="GET" class="space-y-4">
+            <input type="text" name="user_a" placeholder="Username 1 (e.g. roo)" required
+                   class="w-full px-4 py-3 rounded-lg bg-zinc-800 border border-zinc-700 focus:border-film-500 focus:ring-1 focus:ring-film-500 outline-none text-center text-lg placeholder-zinc-600">
+            <input type="text" name="user_b" placeholder="Username 2 (e.g. cline)" required
+                   class="w-full px-4 py-3 rounded-lg bg-zinc-800 border border-zinc-700 focus:border-film-500 focus:ring-1 focus:ring-film-500 outline-none text-center text-lg placeholder-zinc-600">
+            <button type="submit"
+                    class="w-full py-3 rounded-lg bg-film-600 hover:bg-film-500 font-semibold text-white transition">
+                Fight!
+            </button>
+        </form>
+
+        <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-zinc-700"></div>
+            </div>
+            <div class="relative flex justify-center text-xs uppercase">
+                <span class="bg-zinc-900 px-2 text-zinc-500">or</span>
+            </div>
+        </div>
+
+        <form action="{% url 'analysis:single_profile' username='__placeholder__' %}"
+              method="GET" class="space-y-4"
+              onsubmit="event.preventDefault(); window.location.href = '/profile/' + this.username.value;">
+            <input type="text" name="username" placeholder="Just one username to analyse"
+                   class="w-full px-4 py-3 rounded-lg bg-zinc-800 border border-zinc-700 focus:border-film-500 focus:ring-1 focus:ring-film-500 outline-none text-center text-lg placeholder-zinc-600">
+            <button type="submit"
+                    class="w-full py-3 rounded-lg border border-film-600 text-film-400 hover:bg-film-600 hover:text-white font-semibold transition">
+                Analyse Me
+            </button>
+        </form>
+    </div>
+
+    <div class="text-xs text-zinc-600 mt-8 max-w-sm leading-relaxed">
+        Enter two Letterboxd usernames to compare ratings, genres, directors, and more.
+        Data is fetched from public RSS feeds + TMDB.
+    </div>
+</div>
+{% endblock %}
