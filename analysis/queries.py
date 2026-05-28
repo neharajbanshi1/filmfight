@@ -18,5 +18,10 @@ def rating_correlation(user_a, user_b):
 """
 
 
+from profiles.models import Profile
+
+
 def profile_summary(username):
-    return {}
+    profile = Profile.objects.get(username=username)
+    total = profile.diary_entries.count()
+    return {"total_films": total}

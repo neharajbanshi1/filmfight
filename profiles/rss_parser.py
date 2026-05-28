@@ -1,82 +1,100 @@
 import re
-from datetime import datetime
 from xml.etree import ElementTree
 
 import requests
 
 LETTERBOXD_RSS_URL = "https://letterboxd.com/{username}/rss/"
 
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/131.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/rss+xml, application/xml, text/xml, */*",
+}
 
-def fetch_diary_entries(username):
-    url = LETTERBOXD_RSS_URL.format(username=username)
-    resp = requests.get(url, timeout=15)
-    resp.raise_for_status()
-    return parse_rss(resp.text)
+NS = {
+    "atom": "http://www.w3.org/2005/Atom",
+    "letterboxd": "https://letterboxd.com",
+    "tmdb": "https://themoviedb.org",
+    "dc": "http://purl.org/dc/elements/1.1/",
+}
+
+
+def fetch_diary_entries(username, max_pages=10):
+    all_entries = []
+    for page in range(1, max_pages + 1):
+        url = f"{LETTERBOXD_RSS_URL.format(username=username)}?page={page}"
+        resp = requests.get(url, headers=HEADERS, timeout=15)
+        resp.raise_for_status()
+        entries = parse_rss(resp.text)
+        if not entries:
+            break
+        all_entries.extend(entries)
+    return all_entries
 
 
 def parse_rss(xml_text):
     root = ElementTree.fromstring(xml_text)
-    ns = {"atom": "http://www.w3.org/2005/Atom"}
-    channel = root.find("channel")
-    if channel is None:
-        channel = root
+    channel = root.find("channel") or root
 
     items = []
     for item in channel.findall("item"):
-        title_el = item.find("title")
-        if title_el is None or not title_el.text:
-            continue
-        raw = title_el.text.strip()
+        title = _tag_text(item, "letterboxd:filmTitle")
+        year = _tag_text(item, "letterboxd:filmYear")
+        rating_raw = _tag_text(item, "letterboxd:memberRating")
 
-        parsed = _parse_item_title(raw)
-        if parsed is None:
-            continue
+        # Fallback: parse from <title> tag if namespaced tags missing
+        if not title:
+            parsed = _parse_title_fallback(item)
+            if not parsed:
+                continue
+            title = parsed["title"]
+            year = parsed.get("year")
+            rating_raw = parsed.get("rating_raw")
 
-        description = ""
-        desc_el = item.find("description")
-        if desc_el is not None and desc_el.text:
-            description = desc_el.text.strip()
+        rating = float(rating_raw) if rating_raw else None
 
-        rating = _extract_rating(description, parsed["rating_text"])
+        watched_date = _tag_text(item, "letterboxd:watchedDate")
 
         items.append({
-            "film_title": parsed["film_title"],
-            "year": parsed["year"],
+            "film_title": title.strip() if title else "",
+            "year": int(year) if year else None,
             "rating": rating,
-            "review": parsed.get("review", ""),
+            "review": "",
+            "watched_date": watched_date,
         })
 
     return items
 
 
-def _parse_item_title(raw):
+def _tag_text(item, tag):
+    el = item.find(tag, NS)
+    if el is not None and el.text:
+        return el.text.strip()
+    return None
+
+
+def _parse_title_fallback(item):
+    title_el = item.find("title")
+    if title_el is None or not title_el.text:
+        return None
+    raw = title_el.text.strip()
+
+    # "Perfect Blue, 1997 - ★★★★"
     match = re.match(
-        r'"(?P<film_title>.+?)"(?:\s*\((?P<year>\d{4})\))?'
-        r'(?:\s*-\s*(?P<rating_text>.+?))?'
-        r'(?:\s*(?P<review>.*?))?\s*$',
+        r"(?P<title>.+?),?\s*(?:\(?(?P<year>\d{4})\)?)?"
+        r"\s*-\s*(?P<stars>[★½]+)\s*$",
         raw,
     )
-    if not match:
-        return None
+    if match:
+        stars = match.group("stars")
+        rating = stars.count("★") + (0.5 if "½" in stars else 0)
+        return {
+            "title": match.group("title"),
+            "year": match.group("year"),
+            "rating_raw": str(rating),
+        }
 
-    data = match.groupdict()
-    data["year"] = int(data["year"]) if data.get("year") else None
-    return data
-
-
-RATING_MAP = {
-    "★": 1,
-    "★★": 2,
-    "★★★": 3,
-    "★★★★": 4,
-    "★★★★★": 5,
-    "½": 0.5,
-}
-
-
-def _extract_rating(description, rating_text):
-    if rating_text and "★" in rating_text:
-        stars = rating_text.count("★")
-        half = 0.5 if "½" in rating_text else 0
-        return stars + half
     return None

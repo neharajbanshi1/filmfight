@@ -12,9 +12,9 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-zinc-800 rounded-xl p-6 border border-zinc-700">
-            <h2 class="text-sm uppercase tracking-wider text-zinc-500 mb-4">Stats</h2>
-            <div class="text-3xl font-bold text-film-400">—</div>
-            <p class="text-zinc-400 text-sm mt-1">Waiting for your query</p>
+            <h2 class="text-sm uppercase tracking-wider text-zinc-500 mb-4">Films Watched</h2>
+            <div class="text-3xl font-bold text-film-400">{{ total_films|default:"—" }}</div>
+            <p class="text-zinc-400 text-sm mt-1">diary entries</p>
         </div>
         <div class="bg-zinc-800 rounded-xl p-6 border border-zinc-700">
             <h2 class="text-sm uppercase tracking-wider text-zinc-500 mb-4">Average Rating</h2>

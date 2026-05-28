@@ -6,9 +6,10 @@ Learning project. The user writes Django ORM queries in `analysis/queries.py` to
 
 ## Data sources
 
-- **Letterboxd RSS** (`letterboxd.com/{username}/rss/`) — diary entries, ratings, reviews. No auth.
+- **letterboxdpy** (web scraper, `pip install letterboxdpy`) — full diary history via `letterboxdpy.user.User.get_diary()`. Paginates through all pages (~50 entries/page).
 - **TMDB API** (free tier: 40 req/10s) — genres, director, poster. Requires `TMDB_API_KEY` env var.
 - Official Letterboxd API is **not used** (terms forbid data-analysis projects).
+- RSS feed is available but limited to ~100 recent entries; the scraper is preferred for completeness.
 
 ## Commands
 
@@ -17,6 +18,8 @@ export TMDB_API_KEY="your_key"
 python3 manage.py fetch_profile <username>
 python3 manage.py runserver
 ```
+
+No test/lint/typecheck commands exist.
 
 No test/lint/typecheck commands exist.
 
